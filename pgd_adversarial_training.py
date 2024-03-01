@@ -12,9 +12,9 @@ import os
 from models import *
 
 learning_rate = 0.1
-epsilon = 0.0314
+epsilon = 0.0314  # Magnitude of the perturbation
 k = 7
-alpha = 0.00784
+alpha = 0.00784   # Step size for each perturbation
 file_name = 'pgd_adversarial_training'
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -79,8 +79,8 @@ def train(epoch):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
 
-        adv = adversary.perturb(inputs, targets)
-        adv_outputs = net(adv)
+        x = adversary.perturb(inputs, targets) #peturbated input
+        adv_outputs = net(x)   # giving perturbated input in the network
         loss = criterion(adv_outputs, targets)
         loss.backward()
 
@@ -124,8 +124,8 @@ def test(epoch):
                 print('Current benign test accuracy:', str(predicted.eq(targets).sum().item() / targets.size(0)))
                 print('Current benign test loss:', loss.item())
 
-            adv = adversary.perturb(inputs, targets)
-            adv_outputs = net(adv)
+            x = adversary.perturb(inputs, targets)
+            adv_outputs = net(x)
             loss = criterion(adv_outputs, targets)
             adv_loss += loss.item()
 
@@ -135,9 +135,13 @@ def test(epoch):
             if batch_idx % 10 == 0:
                 print('Current adversarial test accuracy:', str(predicted.eq(targets).sum().item() / targets.size(0)))
                 print('Current adversarial test loss:', loss.item())
+    
+    benign_Test_Accuracy = 100. * benign_correct / total
+    Adv_Test_Aaccuracy = 100. * adv_correct / total
 
-    print('\nTotal benign test accuarcy:', 100. * benign_correct / total)
-    print('Total adversarial test Accuarcy:', 100. * adv_correct / total)
+
+    print('\nTotal benign test accuarcy:', benign_Test_Accuracy)
+    print('Total adversarial test Accuarcy:', Adv_Test_Aaccuracy)
     print('Total benign test loss:', benign_loss)
     print('Total adversarial test loss:', adv_loss)
 
